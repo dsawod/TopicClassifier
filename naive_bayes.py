@@ -1,18 +1,21 @@
 import pandas as pd
-from helpful_scripts import _processChunk, _getWordsCountInDictionary
+import time
+from helpful_scripts import _getWordsCountInDictionary
+import dask.dataframe as dd
+from scipy.sparse import csr_matrix
 
 
 def main():
-    VOCAB_SIZE = _getWordsCountInDictionary()
-    classes = []
-    document_words_count = []
-    chunksize = 10 ** 3
-    with pd.read_csv("training.csv", chunksize=chunksize) as reader:
-        for chunk in reader:
-            chunk_classes = chunk[-1]
-            classes.append(chunk_classes)
-            ls = _processChunk(chunk)
-            document_words_count.append(ls)
-     
+    # VOCAB_SIZE = _getWordsCountInDictionary()
+
+    # time taken to read data
+    s_time_dask = time.time()
+    dask_df = dd.read_csv("training.csv")
+    e_time_dask = time.time()
+
+    print("Read with dask: ", (e_time_dask - s_time_dask), "seconds")
+
+    print(dask_df.head(5))
+
 
 main()
