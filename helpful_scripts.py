@@ -1,14 +1,21 @@
+from scipy.sparse import csr_matrix
+import numpy
+
 # This method processes the chucnk of training file read
-def _processChunk(examples):
-    classes = examples[-1]
-    examples = examples.iloc[1:, :-1]
-    size = len(examples)
-    words_count_perclass = []
-    for x in range(size):
-        document = examples[x]
-        total_words_in_document = _getTotalWordsCount(document)
-        words_count_perclass.append(total_words_in_document)
-    return words_count_perclass
+# It returns list of compressed matrices of each row in the chunk.
+def _processChunk(chunk_df):
+    size = len(chunk_df)
+    ls = []
+    for i in range(size):
+        row = chunk_df.iloc[i]  # This is Series
+        row_as_list = row.values.tolist()  # Convert series to a list
+        row_matrix = numpy.array(
+            row_as_list
+        )  # convert list to a matrix which is sparse
+        compressed_row_matrix = csr_matrix(row_matrix)  # Compress sparse matrix
+        ls.append(compressed_row_matrix)
+
+    return ls
 
 
 # This method returns a list of prior probabilities
