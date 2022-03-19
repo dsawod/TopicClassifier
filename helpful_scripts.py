@@ -24,7 +24,7 @@ def _getClassProbability(classes):
     # do list = data[-1]
 
     # we know we only have 20 classes
-    list = [0] * 20
+    list = [0] * 3
     size = len(classes)
     for i in range(size):
         id = classes[i]
