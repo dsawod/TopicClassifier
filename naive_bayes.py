@@ -1,18 +1,22 @@
+from __future__ import division
 import pandas as pd
-
+import numpy
+from math import log
 from helpful_scripts import (
     _getWordsCountInDictionary,
     _processChunk,
     _getClassProbability,
-    _getCountsPerClass,
     _fillClassDataList,
+    _predict,
+    _addClassProbability,
+    _writeToFile,
 )
 import time
 from scipy.sparse import csr_matrix
 
 
 def main():
-    # VOCAB_SIZE = _getWordsCountInDictionary()
+    VOCAB_SIZE = _getWordsCountInDictionary()
     CLASS_NUM = 3
     class_data_ls = [[] for i in range(CLASS_NUM)]
     csr_rows = []
@@ -36,18 +40,28 @@ def main():
     e_time_dask = time.time()
     print("Read time 1000: ", (e_time_dask - s_time_dask), "seconds")
 
-    # new = csr_rows[0] + csr_rows[1]
-    # print(new)
-    # print(new.indices)
-    # print(new.data)
+    index = class_data_ls[0].getLs()[0]
+    print(index.data)
+    x = numpy.log((index.data * 5) / 4)
+    print(x)
+    print(numpy.sum(x))
+    print(class_data_ls[0].probability)
 
-    data = class_data_ls[0].getLs()
-    print(data)
-    print(data[0])
-    print(class_data_ls[0].getClassID())
+    probability_ls = _getClassProbability(class_ls)
 
-    # probability_ls = _getClassProbability(class_ls)
-    # print(probability_ls)
+    _addClassProbability(class_data_ls, probability_ls)
+
+    id_ls = []
+    prediction_ls = []
+    with pd.read_csv("trainingpoems.csv", chunksize=chunksize, header=None) as reader:
+        for chunk in reader:
+            (chunk_id_ls, chunk_predcition_ls) = _predict(
+                class_data_ls, chunk, VOCAB_SIZE
+            )
+            id_ls = id_ls + chunk_id_ls
+            prediction_ls = prediction_ls + chunk_predcition_ls
+
+    _writeToFile(id_ls, prediction_ls)
 
 
 main()

@@ -1,11 +1,13 @@
+from math import log
 from scipy.sparse import csr_matrix
-import numpy
+import numpy, csv
 
 
 class ClassData:
     def __init__(self, class_id):
         self.class_id = class_id
         self.csr_ls = []
+        self.probability = 0
 
     def getClassID(self):
         return self.class_id
@@ -37,13 +39,49 @@ def _processChunk(chunk, class_data_ls, class_ls):
     return ls
 
 
+def _predict(class_data_ls, chunk, total_words):
+    size = len(chunk)
+    id_ls = chunk.columns[0].values.tolist()
+    predicted_class_ls = []
+    chunk.drop(
+        chunk.columns[0], axis=1, inplace=True
+    )  # dropping document id from the data frame
+
+    for i in range(size):
+        class_probability_ls = [20]
+        row = chunk.iloc[i]  # This is Series
+        row_as_list = row.values.tolist()  # Convert series to a list
+        row_matrix = numpy.array(
+            row_as_list
+        )  # convert list to a matrix which is sparse
+        csr = csr_matrix(row_matrix)  # Compress sparse row matrix
+        for j in range(20):
+            class_probability_ls.append(
+                _sentenceGivenClassProbability(class_data_ls[j], csr, total_words)
+            )
+        pred_class = class_probability_ls.index(max(class_probability_ls)) + 1
+        predicted_class_ls.append(pred_class)
+
+    return id_ls, predicted_class_ls
+
+
+def _sentenceGivenClassProbability(class_data, csr, total_words):
+    words_in_class = _getNumOfUniqueWordsInClass(class_data)
+    document_values = csr.data
+    prior = 1 / 12000
+    class_probability = class_data.probability
+    document_values_probabilites = numpy.log(
+        (document_values + prior) / (words_in_class + prior * total_words)
+    )
+    return class_probability * numpy.sum(document_values_probabilites)
+
+
 def _fillClassDataList(class_data, ls):
     size = len(ls)
-    print(ls)
     for i in range(size):
         index = ls[i] - 1
         if class_data[index] == []:
-            new_class_data = ClassData(index+1)
+            new_class_data = ClassData(index + 1)
             class_data[index] = new_class_data
 
 
@@ -63,6 +101,11 @@ def _getClassProbability(classes):
 
     return probability_list
 
+def _addClassProbability(class_data_ls,pb_ls):
+    size = len(pb_ls)
+    for i in range(size):
+        class_data_ls[i].probability = pb_ls[i]
+
 
 # This method returns size of vocabulary
 def _getWordsCountInDictionary():
@@ -73,44 +116,27 @@ def _getWordsCountInDictionary():
     return len(lines)
 
 
-# This method returns total words in a document
-def _getTotalWordsCount(document):
-    # document is an instance in training file
-    size = len(document)
-    count = 0
-    for i in range(size):
-        count = count + document[i]
-
-    return count
+def _getNumOfUniqueWordsInClass(class_data):
+    csrrows_ls = class_data.getLs()
+    size = len(csrrows_ls)
+    sum = csrrows_ls[0]
+    for i in range(1, size):
+        sum = sum + csrrows_ls[i]
+    return len(sum.data)
 
 
-"""
-Takes in a Pandas dataframe with first element being the document ID, the last element being the class of the document, 
-and the elements in between are the word counts of the document. 
-Returns a list of lists. Each list contains the word counts for each class.
-"""
+def _writeToFile(ids, predictions):
+    with open("submit.csv", "w", newline="\n") as file:
+        fieldnames = ["id", "class"]
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        size = len(ids)
+        for x in range(size):
+            writer.writerow({"id": ids[x], "class": prediction[x]})
 
 
-def _getCountsPerClass(df):
-    # Convert Pandas dataframe to list
-    dfList = df.values.tolist()
-    # maxNum stores the largest class number
-    # Note: this uses the class number of the last document, but we are not guaranteed that the last document
-    # will have the highest class number.
-    maxNum = dfList[-1][-1]
-    # [[] for i in range(maxNum)] creates a list of empty lists with the number of classes.
-    # Note: using [[]]*maxNum doesn't work because each list will be pointing to the same one and causes problems later.
-    # totalCounts first holds all the document word counts for each class.
-    # Will later hold total word count for each class.
-    totalCounts = [[] for i in range(maxNum)]
-    # Group documents by class in totalCounts list
-    for i in range(len(dfList)):
-        row = dfList[i]
-        classNum = row[-1]
-        totalCounts[classNum - 1].append(row[1:-2])
-    # For each class in totalCounts, add word count for indices in each document to get total word count.
-    # Sum shortcut found from:
-    # https://stackoverflow.com/questions/64264392/adding-numbers-in-the-same-indices-in-list-of-lists
-    for i in range(len(totalCounts)):
-        currentClass = totalCounts[i]
-        totalCounts[i] = list(map(sum, zip(*currentClass)))
+
+
+
+
+
