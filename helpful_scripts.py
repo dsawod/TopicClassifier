@@ -1,6 +1,7 @@
 from math import log2
 import scipy.sparse as sparse
-from scipy.sparse import csr_matrix, vstack, coo_matrix
+from scipy.sparse import csr_matrix, vstack
+from scipy.special import softmax
 import numpy, csv
 import pandas as pd
 import time
@@ -91,7 +92,7 @@ def _addClassToClassDataObjects(class_data, ls):
 
 def _addCSRsToClassDataObjects(class_data_ls, class_ls):
     size = len(class_ls)
-    matrix = sparse.load_npz("X.npz")
+    matrix = sparse.load_npz("CSR.npz")
     for i in range(size):
         index = class_ls[i] - 1
         object = class_data_ls[index]
@@ -157,6 +158,7 @@ def _readSparseMatrixFromCSV():
     last_column = df.iloc[:, -1]
     class_ls = last_column.values.tolist()
     df.drop(df.columns[len(df.columns) - 1], axis=1, inplace=True)
+
     matrix1 = csr_matrix(df.values)
 
     skip = [x for x in range(chunksize)]
@@ -197,3 +199,54 @@ def _getClassList():
 
     ls = list(map(int, ls))
     return ls
+
+
+def _initiateDeltaMatrix(target):
+    num_of_classes = 20
+    classes = [i + 1 for i in range(num_of_classes)]
+    delta_col = len(target)
+    delta = numpy.zeros([num_of_classes, delta_col])
+    for i in range(num_of_classes):
+        class_num = classes[i]
+        for j in range(delta_col):
+            if class_num == target[j]:
+                delta[i, j] = class_num
+
+    return csr_matrix(delta)
+
+
+def _optimizeWeights(W, X, delta, l_r, penalty):
+    for i in range(1000):
+        predictions = _findYGivenXandW(X, W)
+        W = W + l_r * ((delta - predictions) @ X - penalty * W)
+
+    return W
+
+
+def _findYGivenXandW(X, W):
+    X_transposed = X.transpose()
+    product = W @ X_transposed
+    # predictions = numpy.exp(product.data)
+    predictions = softmax(product.toarray(), axis=1)
+
+    return csr_matrix(predictions)
+
+
+def _predict_LR(W):
+    W_tranposed = W.transpose()
+    pred_ls = []
+
+    chunksize = 100
+    with pd.read_csv("testing.csv", header=None, chunksize=chunksize) as reader:
+        for chunk in reader:
+
+            # chunk.drop(chunk.columns[0], axis=1, inplace=True)
+            chunk_csr = csr_matrix(chunk)
+            product = chunk_csr @ W_tranposed
+            result = softmax(product.toarray(), axis=1)
+            predictions = numpy.argmax(result, axis=1)
+            ls = predictions.tolist()
+            pred_ls = pred_ls + ls
+            print(pred_ls)
+
+    return pred_ls
