@@ -216,7 +216,7 @@ def _initiateDeltaMatrix(target):
 
 
 def _optimizeWeights(W, X, delta, l_r, penalty):
-    for i in range(1000):
+    for i in range(500):
         predictions = _findYGivenXandW(X, W)
         W = W + l_r * ((delta - predictions) @ X - penalty * W)
 
@@ -226,8 +226,7 @@ def _optimizeWeights(W, X, delta, l_r, penalty):
 def _findYGivenXandW(X, W):
     X_transposed = X.transpose()
     product = W @ X_transposed
-    # predictions = numpy.exp(product.data)
-    predictions = softmax(product.toarray(), axis=1)
+    predictions = numpy.exp(product.toarray())
 
     return csr_matrix(predictions)
 
@@ -243,7 +242,7 @@ def _predict_LR(W):
             # chunk.drop(chunk.columns[0], axis=1, inplace=True)
             chunk_csr = csr_matrix(chunk)
             product = chunk_csr @ W_tranposed
-            result = softmax(product.toarray(), axis=1)
+            result = numpy.exp(product.toarray())
             predictions = numpy.argmax(result, axis=1)
             ls = predictions.tolist()
             pred_ls = pred_ls + ls
