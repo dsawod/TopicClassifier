@@ -170,7 +170,10 @@ def _readSparseMatrixFromCSV():
             chunk.drop(chunk.columns[0], axis=1, inplace=True)
             last_column = chunk.iloc[:, -1]
             last_column_ls = last_column.values.tolist()
-            class_ls = class_ls + last_column_ls
+            column_ls_flattened = [
+                item for sublist in last_column_ls for item in sublist
+            ]
+            class_ls = class_ls + column_ls_flattened
             chunk.drop(chunk.columns[len(chunk.columns) - 1], axis=1, inplace=True)
             matrix2 = csr_matrix(chunk.values)
             matrix = vstack([matrix1, matrix2])
@@ -216,7 +219,7 @@ def _initiateDeltaMatrix(target):
 
 
 def _optimizeWeights(W, X, delta, l_r, penalty):
-    for i in range(500):
+    for i in range(100):
         predictions = _findYGivenXandW(X, W)
         W = W + l_r * ((delta - predictions) @ X - penalty * W)
 
@@ -234,18 +237,20 @@ def _findYGivenXandW(X, W):
 def _predict_LR(W):
     W_tranposed = W.transpose()
     pred_ls = []
+    id_ls = []
 
     chunksize = 100
     with pd.read_csv("testing.csv", header=None, chunksize=chunksize) as reader:
         for chunk in reader:
-
-            # chunk.drop(chunk.columns[0], axis=1, inplace=True)
+            chunk_ls = chunk.iloc[:, :1].values.tolist()
+            chunk_ids = [item for sublist in chunk_ls for item in sublist]
+            id_ls = id_ls + chunk_ids
             chunk_csr = csr_matrix(chunk)
             product = chunk_csr @ W_tranposed
             result = numpy.exp(product.toarray())
             predictions = numpy.argmax(result, axis=1)
             ls = predictions.tolist()
             pred_ls = pred_ls + ls
-            print(pred_ls)
+            # print(pred_ls)
 
-    return pred_ls
+    return id_ls, pred_ls
