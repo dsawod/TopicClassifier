@@ -5,6 +5,7 @@ from scipy.special import softmax
 import numpy, csv
 import pandas as pd
 import time
+from sklearn.metrics import confusion_matrix
 
 
 class ClassData:
@@ -194,9 +195,43 @@ def _saveClassListToFile(class_ls):
             output.write("\n")
 
 
+def _saveNBPredListToFile(class_ls):
+    with open("NBPredictionList.txt", "w") as output:
+        for item in class_ls:
+            output.write(str(item))
+            output.write("\n")
+
+
+def _saveLRPredListToFile(class_ls):
+    with open("LRPredictionList.txt", "w") as output:
+        for item in class_ls:
+            output.write(str(item))
+            output.write("\n")
+
+
 def _getClassList():
     ls = []
     with open("ClassList.txt") as file:
+        for line in file:
+            ls.append(line.rstrip())
+
+    ls = list(map(int, ls))
+    return ls
+
+
+def _getNBPredictionList():
+    ls = []
+    with open("NBPredictionList.txt") as file:
+        for line in file:
+            ls.append(line.rstrip())
+
+    ls = list(map(int, ls))
+    return ls
+
+
+def _getLRPredictionList():
+    ls = []
+    with open("LRPredictionList.txt") as file:
         for line in file:
             ls.append(line.rstrip())
 
@@ -245,12 +280,33 @@ def _predict_LR(W):
             chunk_ls = chunk.iloc[:, :1].values.tolist()
             chunk_ids = [item for sublist in chunk_ls for item in sublist]
             id_ls = id_ls + chunk_ids
+            chunk.drop(chunk.columns[0], axis=1, inplace=True)
+            row, col = chunk.shape
+            chunk[0] = [0] * row
             chunk_csr = csr_matrix(chunk)
             product = chunk_csr @ W_tranposed
             result = numpy.exp(product.toarray())
-            predictions = numpy.argmax(result, axis=1)
+            predictions = numpy.argmax(result, axis=1) + 1
             ls = predictions.tolist()
             pred_ls = pred_ls + ls
             # print(pred_ls)
 
     return id_ls, pred_ls
+
+
+def _confusionMatrixNB():
+    predictions = _getNBPredictionList()
+    actual = _getClassList()
+    pred_arr = numpy.array(predictions)
+    actual_arr = numpy.array(actual)
+    print("Confusion matrix NB:")
+    confusion_matrix(actual_arr, pred_arr)
+
+
+def _confusionMatrixLR():
+    predictions = _getLRPredictionList()
+    actual = _getClassList()
+    pred_arr = numpy.array(predictions)
+    actual_arr = numpy.array(actual)
+    print("Confusion matrix NB:")
+    confusion_matrix(actual_arr, pred_arr)

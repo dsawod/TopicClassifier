@@ -19,7 +19,7 @@ def main():
     k = 20  # num of classes
     n = col - 1  # number of attributes each example has
     learning_rate = 0.0001
-    penalty = 0.9
+    penalty = 0.01
     random = numpy.zeros((k, n + 1))
     W = csr_matrix(random)
     delta_matrix = _initiateDeltaMatrix(class_list)
