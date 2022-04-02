@@ -7,6 +7,8 @@ from helpful_scripts import (
     _initiateDeltaMatrix,
     _predict_LR,
     _writeToFile,
+    _saveLRPredListToFile,
+    _confusionMatrixLR,
 )
 
 
@@ -28,6 +30,8 @@ def main():
     print(W.data)
     id_ls, pred_ls = _predict_LR(W)
     _writeToFile(id_ls, pred_ls)
+    _saveLRPredListToFile(pred_ls)
+    _confusionMatrixLR()
 
 
 main()
