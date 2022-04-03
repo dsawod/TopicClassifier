@@ -195,43 +195,9 @@ def _saveClassListToFile(class_ls):
             output.write("\n")
 
 
-def _saveNBPredListToFile(class_ls):
-    with open("NBPredictionList.txt", "w") as output:
-        for item in class_ls:
-            output.write(str(item))
-            output.write("\n")
-
-
-def _saveLRPredListToFile(class_ls):
-    with open("LRPredictionList.txt", "w") as output:
-        for item in class_ls:
-            output.write(str(item))
-            output.write("\n")
-
-
 def _getClassList():
     ls = []
     with open("ClassList.txt") as file:
-        for line in file:
-            ls.append(line.rstrip())
-
-    ls = list(map(int, ls))
-    return ls
-
-
-def _getNBPredictionList():
-    ls = []
-    with open("NBPredictionList.txt") as file:
-        for line in file:
-            ls.append(line.rstrip())
-
-    ls = list(map(int, ls))
-    return ls
-
-
-def _getLRPredictionList():
-    ls = []
-    with open("LRPredictionList.txt") as file:
         for line in file:
             ls.append(line.rstrip())
 
@@ -269,14 +235,17 @@ def _findYGivenXandW(X, W):
     return csr_matrix(predictions)
 
 
-def _predict_LR(W):
+def _predict_LR(W, file_path):
     W_tranposed = W.transpose()
     pred_ls = []
     id_ls = []
 
     chunksize = 100
-    with pd.read_csv("testing.csv", header=None, chunksize=chunksize) as reader:
+    with pd.read_csv(file_path, header=None, chunksize=chunksize) as reader:
         for chunk in reader:
+            if file_path == "training.csv":
+                chunk.drop(chunk.columns[len(chunk.columns) - 1], axis=1, inplace=True)
+
             chunk_ls = chunk.iloc[:, :1].values.tolist()
             chunk_ids = [item for sublist in chunk_ls for item in sublist]
             id_ls = id_ls + chunk_ids
@@ -293,20 +262,18 @@ def _predict_LR(W):
 
     return id_ls, pred_ls
 
-
-def _confusionMatrixNB():
-    predictions = _getNBPredictionList()
-    actual = _getClassList()
-    pred_arr = numpy.array(predictions)
-    actual_arr = numpy.array(actual)
+# this takes list of predicted class on training data
+def _confusionMatrixNB(y_pred):
+    y_actual = _getClassList()
+    pred_arr = numpy.array(y_pred)
+    actual_arr = numpy.array(y_actual)
     print("Confusion matrix NB:")
-    confusion_matrix(actual_arr, pred_arr)
+    print(confusion_matrix(actual_arr, pred_arr))
 
 
-def _confusionMatrixLR():
-    predictions = _getLRPredictionList()
-    actual = _getClassList()
-    pred_arr = numpy.array(predictions)
-    actual_arr = numpy.array(actual)
-    print("Confusion matrix NB:")
-    confusion_matrix(actual_arr, pred_arr)
+def _confusionMatrixLR(y_pred):
+    y_actual = _getClassList()
+    pred_arr = numpy.array(y_pred)
+    actual_arr = numpy.array(y_actual)
+    print("Confusion matrix LR:")
+    print(confusion_matrix(actual_arr, pred_arr))
