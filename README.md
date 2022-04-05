@@ -34,6 +34,5 @@ To run this code on local machine:
     - Run 'python logistic_regression.py'.
     - A csv file named 'submitLR.csv' will be created containing the prediction of each document.
     - In the terminal, the confusion matrix will also be outputted.
-  - To run Naive Bayes:
-    - Run 'python naive_bayes.py'.
-    - A csv file named 'submitNB.csv' will be created containing the prediction of each document.
+  - For Naive Bayes, there is no execution needed:
+    - Look in report at part "Description of Naive Bayes Code" for details
