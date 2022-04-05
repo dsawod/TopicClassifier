@@ -6,7 +6,7 @@ from helpful_scripts import (
     _optimizeWeights,
     _initiateDeltaMatrix,
     _predict_LR,
-    _writeToFile,
+    _writeToFileLR,
     _confusionMatrixLR,
 )
 
@@ -28,7 +28,7 @@ def main():
     print("Weights optimized")
     print(W.data)
     # id_ls, pred_ls = _predict_LR(W, "testing.csv")
-    # _writeToFile(id_ls, pred_ls)
+    # _writeToFileLR(id_ls, pred_ls)
     # for confusing matrix we predict on training file
     (id, y_pred) = _predict_LR(W, "training.csv")
     _confusionMatrixLR(y_pred)

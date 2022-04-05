@@ -141,8 +141,17 @@ def _getNumOfUniqueWordsInClass(class_data):
     return len(sum.data), sum
 
 
-def _writeToFile(ids, predictions):
-    with open("submit.csv", "w", newline="\n") as file:
+def _writeToFileLR(ids, predictions):
+    with open("submitLR.csv", "w", newline="\n") as file:
+        fieldnames = ["id", "class"]
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        size = len(ids)
+        for x in range(size):
+            writer.writerow({"id": ids[x], "class": predictions[x]})
+
+def _writeToFileNB(ids, predictions):
+    with open("submitNB.csv", "w", newline="\n") as file:
         fieldnames = ["id", "class"]
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
@@ -220,7 +229,7 @@ def _initiateDeltaMatrix(target):
 
 
 def _optimizeWeights(W, X, delta, l_r, penalty):
-    for i in range(100):
+    for i in range(1000):
         predictions = _findYGivenXandW(X, W)
         W = W + l_r * ((delta - predictions) @ X - penalty * W)
 

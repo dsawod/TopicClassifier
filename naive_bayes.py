@@ -7,7 +7,7 @@ from helpful_scripts import (
     _addClassToClassDataObjects,
     _predict,
     _addClassProbability,
-    _writeToFile,
+    _writeToFileNB,
     _getClassList,
     _addCSRsToClassDataObjects,
 )
@@ -43,7 +43,7 @@ def main():
             id_ls = id_ls + chunk_id_ls
             prediction_ls = prediction_ls + chunk_predcition_ls
 
-    _writeToFile(id_ls, prediction_ls)
+    _writeToFileNB(id_ls, prediction_ls)
     e_time_dask = time.time()
     print("time taken to run : ", (e_time_dask - s_time_dask), "seconds")
 
