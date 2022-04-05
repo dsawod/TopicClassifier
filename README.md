@@ -32,7 +32,7 @@ To run this code on local machine:
         - set to desired value
       - Save the changes you made in the logistic_regression.py file.
     - Run 'python logistic_regression.py'.
-    - A csv file named submitLR.csv will be created containing the prediction of each document.
+    - A csv file named 'submitLR.csv' will be created containing the prediction of each document.
     - In the terminal, the confusion matrix will also be outputted.
   - To run Naive Bayes:
     - Run 'python naive_bayes.py'.
