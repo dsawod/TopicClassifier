@@ -38,5 +38,5 @@ To run this code on local machine:
     - Download the zip file from learn named 'NaiveBayesCode.zip'.
     - Unzip the file in the directory you want to run the code.
     - Open up your terminal in the directory where the code is located.
-      - Run 'python finalNB.py'.
+      - Run 'python NaiveBayes.py'.
       - A csv file named 'submission' will contain the predictions for the documents.
