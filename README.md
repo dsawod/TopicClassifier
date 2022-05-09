@@ -1,4 +1,4 @@
-# CS 429/529 Project 12
+# CS 429/529 Project 2
 ## Topic Categorization
 
 ## Details
