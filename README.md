@@ -10,7 +10,7 @@ Team Members:
 - Todd Sipe
 
 Details for the project are found here: 
-[Kaggle NB](https://www.kaggle.com/c/cs529-project-2-nb/overview) /
+[Kaggle](https://www.kaggle.com/c/cs529-project-2-nb/overview) /
 [Kaggle LR](https://www.kaggle.com/competitions/cs529-project-2-lr/overview)
 
 
@@ -20,7 +20,7 @@ This code is written in Python and is platform independent.
 
 To run this code on local machine:
 - Make sure you have Python installed on your machine.
-  - To run Linear Regression:
+  - To run Logistic Regression:
     - Download the zip file from learn named 'TopicClassifier-main.zip'.
     - Unzip the file in the directory you want to run the code.
     - Open up your terminal in the directory where the code is located.
